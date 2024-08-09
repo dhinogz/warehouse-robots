@@ -6,7 +6,7 @@
 
 ## Install
 
-### Create a (python virtual environment)[https://docs.python.org/3/library/venv.html]
+### Create a [python virtual environment](https://docs.python.org/3/library/venv.html)
 
 ```bash
 python -m venv .venv
