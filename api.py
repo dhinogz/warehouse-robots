@@ -39,13 +39,6 @@ def get_api() -> FastAPI:
 api_router = APIRouter()
 
 
-@api_router.get("/mesa")
+@api_router.get("/healthy")
 def get_mesa() -> str:
-    res = ""
-    positions = [(0, 8), (9, 1)]
-    m = RobotModel(10, 10, positions)
-    res += f"before{m.robot_positions}  "
-    m.step()
-    res += f"after{m.robot_positions}"
-
-    return res
+    return "healthy"
