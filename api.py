@@ -1,44 +1,54 @@
 from fastapi import FastAPI, APIRouter
-
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from pydantic_settings import BaseSettings, SettingsConfigDict
+import logging
+from functools import lru_cache
 
-from model import RobotModel
+
+class Settings(BaseSettings):
+    APP_NAME: str = "Mesa API"
+    APP_VERSION: str = "1.0.0"
+    ALLOWED_HOSTS: list[str] = ["localhost", "warehouse.davhinojosa.com"]
+    API_KEY: str = "secret-key"
+
+    model_config = SettingsConfigDict(env_file=".env")
 
 
-def get_api() -> FastAPI:
-    """
-    Get FastAPI application.
+@lru_cache
+def get_settings():
+    return Settings()  # type: ignore
 
-    This is the main constructor of an application.
 
-    :return: application.
-    """
-
-    app = FastAPI(
-        title="Mesa API",
-        version="0.0.1",
-        description="An interface to our Mesa models",
-        openapi_url="/openapi.json",
-        docs_url="/",
-    )
-    app.include_router(api_router)
-
-    # Sets all CORS enabled origins
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
-    return app
-
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 api_router = APIRouter()
 
 
 @api_router.get("/healthy")
-def get_mesa() -> str:
+def health() -> str:
     return "healthy"
+
+
+def get_api() -> FastAPI:
+    settings = get_settings()
+    app = FastAPI(
+        title=settings.APP_NAME,
+        version=settings.APP_VERSION,
+        description="An interface to our Mesa models",
+        openapi_url="/openapi.json",
+        docs_url="/docs",
+        redoc_url="/redoc",
+    )
+
+    app.include_router(api_router)
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.ALLOWED_HOSTS,
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "DELETE"],
+        allow_headers=["*"],
+    )
+
+    return app
