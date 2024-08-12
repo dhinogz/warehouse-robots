@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     ALLOWED_HOSTS: list[str] = ["*"]
     API_KEY: str = "secret-key"
 
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
 @lru_cache
