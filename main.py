@@ -5,13 +5,6 @@ import typer
 cli = typer.Typer(no_args_is_help=True)
 
 
-@cli.callback()
-def callback():
-    """
-    CLI tool for common warehouse simulation in Mesa
-    """
-
-
 @cli.command("model")
 def run_model():
     from model import WarehouseModel
