@@ -22,7 +22,7 @@ def help():
 
 @cli.command("serve")
 def serve_api(
-    host: str = "localhost", port: int = 8000, workers: int = 3, is_dev: bool = True
+    host: str = "0.0.0.0", port: int = 8000, workers: int = 3, is_dev: bool = True
 ):
     uvicorn.run(
         "api:get_api",

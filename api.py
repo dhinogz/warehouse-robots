@@ -8,7 +8,7 @@ from functools import lru_cache
 class Settings(BaseSettings):
     APP_NAME: str = "Mesa API"
     APP_VERSION: str = "1.0.0"
-    ALLOWED_HOSTS: list[str] = ["localhost", "warehouse.davhinojosa.com"]
+    ALLOWED_HOSTS: list[str] = ["*"]
     API_KEY: str = "secret-key"
 
     model_config = SettingsConfigDict(env_file=".env")
