@@ -32,28 +32,34 @@ def health() -> str:
 
 @api_router.get("/dummy")
 def dummy() -> dict:
+    """
+    Retrieve dummy data for testing purposes.
+
+    Returns:
+        dict: A dictionary containing the grid dimensions, obstacles, loading stations, and agents.
+
+    Example response:
+    {
+        "length": 10,
+        "width": 10,
+        "obstacles": "1,3 4,2",
+        "loadingStations": "1,1 3,1",
+        "agents": [
+            {"id": 1, "type": "robot", "positions": ["1,2", "2,2"]},
+            {"id": 2, "type": "robot", "positions": ["1,4", "2,4"]},
+            {"id": 3, "type": "package", "positions": ["1,6"]}
+        ]
+    }
+    """
     data = {
         "length": 10,
         "width": 10,
         "obstacles": "1,3 4,2",
-        "loadingStation": "1,1 3,1",
-        "steps": [
-            {
-                "step": 1,
-                "agents": [
-                    {"id": 1, "type": "robot", "pos": "1,2"},
-                    {"id": 2, "type": "robot", "pos": "1,4"},
-                    {"id": 1, "type": "packages", "pos": "1,6"},
-                ],
-            },
-            {
-                "step": 2,
-                "agents": [
-                    {"id": 1, "type": "robot", "pos": "2,2"},
-                    {"id": 2, "type": "robot", "pos": "2,4"},
-                    {"id": 1, "type": "packages", "pos": "1,6"},
-                ],
-            },
+        "loadingStations": "1,1 3,1",
+        "agents": [
+            {"id": 1, "type": "robot", "positions": ["1,2", "2,2"]},
+            {"id": 2, "type": "robot", "positions": ["1,4", "2,4"]},
+            {"id": 3, "type": "package", "positions": ["1,6", "1,6"]},
         ],
     }
     return data
