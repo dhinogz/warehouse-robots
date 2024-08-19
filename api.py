@@ -30,6 +30,34 @@ def health() -> str:
     return "healthy"
 
 
+@api_router.get("/dummy")
+def dummy() -> dict:
+    data = {
+        "length": 10,
+        "width": 10,
+        "obstacles": "1,3 4,2",
+        "loadingStation": "1,1 3,1",
+        "steps": [
+            {
+                "step": 1,
+                "agents": [
+                    {"id": 1, "type": "robot", "pos": "1,2"},
+                    {"id": 2, "type": "robot", "pos": "1,4"},
+                    {"id": 1, "type": "packages", "pos": "1,6"},
+                ],
+            },
+            {
+                "step": 2,
+                "agents": [
+                    {"id": 1, "type": "robot", "pos": "2,2"},
+                    {"id": 2, "type": "robot", "pos": "2,4"},
+                    {"id": 1, "type": "packages", "pos": "1,6"},
+                ],
+            },
+        ],
+    }
+    return data
+
 def get_api() -> FastAPI:
     settings = get_settings()
     app = FastAPI(
