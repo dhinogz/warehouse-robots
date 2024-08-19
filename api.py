@@ -58,6 +58,7 @@ def dummy() -> dict:
     }
     return data
 
+
 def get_api() -> FastAPI:
     settings = get_settings()
     app = FastAPI(

@@ -18,4 +18,4 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["python", "main.py", "serve", "--worker", "1", --no-is-dev"]
+CMD ["python", "main.py", "serve", "--workers", "1", "--no-is-dev"]
