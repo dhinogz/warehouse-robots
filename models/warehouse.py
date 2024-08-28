@@ -46,7 +46,7 @@ class RobotAgent(Agent):
         """
         1. Check if robot still has battery
         2. Check robot state
-        3. Check if robot is on a current path and act accordinglyi
+        3. Check if robot is on a current path and act
         """
         print("agent stepping")
 
