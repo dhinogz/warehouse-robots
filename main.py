@@ -1,15 +1,14 @@
 import uvicorn
-
 import typer
 
 cli = typer.Typer(no_args_is_help=True)
 
 
-@cli.command("model")
-def run_model():
-    from model import WarehouseModel
+@cli.command("search")
+def search():
+    from models.search import robot_search
 
-    WarehouseModel(10, 10)
+    robot_search()
 
 
 @cli.command()
