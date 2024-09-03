@@ -115,7 +115,11 @@ def robot_search():
 
     g = vg.VisGraph()
     g.build(
-        [list(map(lambda p: vg.Point(p[0], p[1]), poly)) for poly in buffered_obstacles]
+        [
+            list(map(lambda p: vg.Point(p[0], p[1]), poly))
+            for poly in buffered_obstacles
+        ],
+        status=False,
     )
 
     # Visualization
