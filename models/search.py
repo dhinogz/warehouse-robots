@@ -1,242 +1,176 @@
-from dataclasses import dataclass
-import heapq
-import random
-from typing import List, Tuple, Optional
-import logging
+import os
+import matplotlib.pyplot as plt
+from mesa.space import FloatCoordinate
+import pyvisgraph as vg
 
-import mesa
-from mesa.datacollection import DataCollector
-from mesa.space import Coordinate, FloatCoordinate, NetworkCoordinate
-
-DIRECTIONS = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+ObstacleCorners = tuple[
+    FloatCoordinate, FloatCoordinate, FloatCoordinate, FloatCoordinate
+]
 
 
-@dataclass
-class Robot:
-    pos_x: int
-    pos_y: int
+def read_pos(input: list[str]) -> list[FloatCoordinate]:
+    x_coords = [float(x) for x in input[0].strip().split(",")]
+    y_coords = [float(y) for y in input[1].strip().split(",")]
+    return [(x, y) for x, y in zip(x_coords, y_coords)]
 
 
-@dataclass
-class Goal:
-    pos_x: float
-    pos_y: float
+def read_obstacle(input: list[str]) -> ObstacleCorners:
+    if len(input) != 2:
+        raise Exception()
+
+    x = [float(n) for n in input[0].strip().split(",")]
+    y = [float(n) for n in input[1].strip().split(",")]
+
+    return (
+        (x[0], y[0]),
+        (x[1], y[1]),
+        (x[2], y[2]),
+        (x[3], y[3]),
+    )
 
 
-@dataclass
-class Obstacle:
-    corner_0: float
-    corner_1: float
-    corner_2: float
-    corner_3: float
-
-
-class ObstacleCell(mesa.Agent):
-    """Represents an obstacle in the grid."""
-
-
-class GoalCell(mesa.Agent):
-    """Represents a goal in the grid."""
-
-
-class RobotAgent(mesa.Agent):
-    """Agent that finds paths to goals."""
-
-    def __init__(self, unique_id: int, model):
-        super().__init__(unique_id, model)
-        self.path: List[Tuple[int, int]] = []
-
-    def step(self):
-        """Perform a single step of the agent."""
-        pass
-        # if not self.path:
-        #     self.model.set_new_path(self)
-        #
-        # if self.path:
-        #     next_pos = self.path.pop(0)
-        #     self.model.grid.move_agent(self, next_pos)
-        #     print(f"moving agent to {next_pos}")
-        #
-        #     cell_contents = self.model.grid.get_cell_list_contents([next_pos])
-        #     for agent in cell_contents:
-        #         if isinstance(agent, GoalCell):
-        #             print(f"Found goal: {agent.unique_id}")
-        #             self.model.remove_goal(agent)
-        #             self.model.set_new_path()
-        #             break
-        #
-
-
-SCALE_VALUE = 100
-
-
-class PathfindingModel(mesa.Model):
-    """Model for pathfinding simulation."""
-
-    def __init__(
-        self,
-        width: int,
-        height: int,
-        robots: list[Robot],
-        goals: list[Goal],
-        obstacles: list[Obstacle],
-    ):
-        super().__init__()
-        self.random = random
-        self.schedule = mesa.time.SimultaneousActivation(self)
-
-        self.grid = mesa.space.SingleGrid(width, height, True)
-
-        self.width = width
-        self.height = height
-
-        self.robots = robots
-        self.goals = goals
-        self.obstacles = obstacles
-
-        self.robot_agents: list[RobotAgent] = []
-        self.goal_cells: list[GoalCell] = []
-
-        self.logger = logging.getLogger(__name__)
-
-        self._place_robots()
-        self._place_goals()
-        # self._place_obstacles()
-
-        self.running = True
-        self.datacollector = DataCollector(
-            model_reporters={"Remaining Goals": "num_goals"},
-        )
-
-    def set_new_path(self, robot_agent: RobotAgent):
-        """Set a new path for the pathfinding agent."""
-        if self.goal_cells:
-            if robot_agent.pos is not FloatCoordinate:
-                self.logger.error("No pos for robot agent")
-                return
-            start = (robot_agent.pos[0], robot_agent.pos[1])
-            goal = self.random.choice(self.goals)
-            new_path = self.a_star(start, (self.goals.pos_x, goal.pos_y))
-            if new_path:
-                self.robot_agents[0].path = new_path
-            else:
-                print(f"No path found to goal at {goal}. Choosing a new goal.")
-                self.goals.remove(goal)
-                self.set_new_path(robot_agent)
-        else:
-            self.running = False
-            print("All goals have been found. Simulation complete.")
-
-    def _place_robots(self):
-        for i, r in enumerate(self.robots):
-            robot_agent = RobotAgent(i, self)
-            pos: Coordinate = (r.pos_x, r.pos_y)
-
-            self.grid.place_agent(robot_agent, pos)
-            self.robot_agents.append(robot_agent)
-            self.schedule.add(robot_agent)
-
-            self.set_new_path(robot_agent)
-
-    def _place_goals(self):
-        for i, g in enumerate(self.goals):
-            goal_cell = GoalCell(i, self)
-            pos: Coordinate = (
-                self._scale_to_mesa(g.pos_x),
-                self._scale_to_mesa(g.pos_y),
-            )
-
-            self.grid.place_agent(goal_cell, pos)
-            self.goal_cells.append(goal_cell)
-
-    def _place_obstacles(self):
-        # TODO: calculate an obstacle that will take up n amount of grids. Each grid will have an obstacle cell
-        for i, o in enumerate(self.obstacles):
-            _ = o.corner_0
-            # and so on...
-            obstacle = ObstacleCell(i, self)
-            x: int = 1
-            y: int = 2
-            pos = (x, y)
-            self.grid.place_agent(obstacle, pos)
-
-    def step(self):
-        """Perform a single step of the model."""
-        self.schedule.step()
-        self.datacollector.collect(self)
-
-        if not self.goals:
-            self.running = False
-            print("All goals have been found")
-
-    def remove_goal(self, goal_cell: GoalCell):
-        """Remove a goal from the model."""
-        pass
-        # self.goals.remove(goal_agent.pos)
-        # self.grid.remove_agent(goal_agent)
-        # self.num_goals -= 1
-        # self.logger.info(f"Goal found! Remaining goals: {self.num_goals}")
-
-    def a_star(
-        self, start: Tuple[int, int], goal: Tuple[int, int]
-    ) -> Optional[List[Tuple[int, int]]]:
-        """Implement the A* algorithm for pathfinding."""
-
-        def heuristic(a: Tuple[int, int], b: Tuple[int, int]) -> float:
-            return abs(a[0] - b[0]) + abs(a[1] - b[1])
-
-        def get_neighbors(pos: Tuple[int, int]) -> List[Tuple[int, int]]:
-            neighbors = []
-            for dx, dy in DIRECTIONS:
-                next_pos = (pos[0] + dx, pos[1] + dy)
-                if self.grid.out_of_bounds(next_pos):
-                    continue
-                cell_contents = self.grid.get_cell_list_contents([next_pos])
-                if any(isinstance(agent, ObstacleCell) for agent in cell_contents):
-                    continue
-                neighbors.append(next_pos)
-            return neighbors
-
-        heap = [(0, start)]
-        came_from = {}
-        cost_so_far = {start: 0}
-        closed_set = set()
-
-        while heap:
-            _, current = heapq.heappop(heap)
-
-            if current == goal:
-                path = []
-                while current in came_from:
-                    path.append(current)
-                    current = came_from[current]
-                path.reverse()
-                return path
-
-            closed_set.add(current)
-
-            for next_pos in get_neighbors(current):
-                if next_pos in closed_set:
-                    continue
-
-                new_cost = cost_so_far[current] + 1
-                if next_pos not in cost_so_far or new_cost < cost_so_far[next_pos]:
-                    cost_so_far[next_pos] = new_cost
-                    priority = new_cost + heuristic(goal, next_pos)
-                    heapq.heappush(heap, (priority, next_pos))
-                    came_from[next_pos] = current
-
-        return None
-
-
-def run_model(
-    width: int,
-    height: int,
-    robots: list[Robot],
-    goals: list[Goal],
-    obstacles: list[Obstacle],
+def read_input() -> (
+    tuple[list[FloatCoordinate], list[FloatCoordinate], list[ObstacleCorners]]
 ):
-    """Run the pathfinding model."""
-    model = PathfindingModel(width, height, robots, goals, obstacles)
-    while model.running:
-        model.step()
+    robots: list[FloatCoordinate] = []
+    goals: list[FloatCoordinate] = []
+    obstacle_corners: list[ObstacleCorners] = []
+
+    with os.scandir("inputs") as inputs:
+        for i in inputs:
+            with open(i.path, "r") as f:
+                lines = f.readlines()
+
+                if "Initial" in i.name:
+                    robots = read_pos(lines)
+                elif "Target" in i.name:
+                    goals = read_pos(lines)
+                elif "Obs" in i.name:
+                    obs = read_obstacle(lines)
+                    obstacle_corners.append(obs)
+
+    return robots, goals, obstacle_corners
+
+
+def add_buffer_to_polygon(
+    polygon: list[FloatCoordinate], buffer: float
+) -> list[tuple[float, float]]:
+    from shapely import Polygon
+
+    poly = Polygon(polygon)
+    buffered_poly = poly.buffer(buffer)
+    return list(buffered_poly.exterior.coords)[:-1]
+
+
+def add_buffer_to_list_of_polygons(
+    obstacle_corners: list[ObstacleCorners],
+    buffer: float = 0.11,
+) -> list:
+    obstacles_polys = []
+    buffered_obstacles = []
+    for obs in obstacle_corners:
+        poly = list(obs)
+        obstacles_polys.append(poly)
+        buffered_poly = add_buffer_to_polygon(poly, buffer)
+        buffered_obstacles.append(buffered_poly)
+
+    return buffered_obstacles
+
+
+def add_path_to_graph(
+    ax, g: vg.VisGraph, start: FloatCoordinate, goal: FloatCoordinate, color: str
+) -> tuple[list, FloatCoordinate]:
+    start_point = vg.Point(start[0], start[1])
+    goal_point = vg.Point(goal[0], goal[1])
+    path = g.shortest_path(start_point, goal_point)
+
+    if path:
+        x, y = zip(*[(p.x, p.y) for p in path])
+        ax.plot(x, y, color=color, linewidth=2, label=f"Path ({color})")
+    else:
+        print(f"No path found for {color} robot")
+
+    normalized_path = []
+    for p in path:
+        normalized_path.append((p.x, p.y))
+
+    return normalized_path, goal
+
+
+def write_path(path: list, filename: str):
+    with open(f"output-{filename}", "w") as f:
+        for p in path:
+            f.write(f"{p[0]} {p[1]}\n")
+
+
+def robot_search():
+    robots, goals, obstacle_corners = read_input()
+
+    obstacles_polys = []
+    for obs in obstacle_corners:
+        poly = list(obs)
+        obstacles_polys.append(poly)
+
+    buffered_obstacles = add_buffer_to_list_of_polygons(obstacle_corners)
+
+    g = vg.VisGraph()
+    g.build(
+        [list(map(lambda p: vg.Point(p[0], p[1]), poly)) for poly in buffered_obstacles]
+    )
+
+    # Visualization
+    _, ax = plt.subplots()
+
+    # Plot original obstacles
+    for poly in obstacles_polys:
+        x, y = zip(*poly)
+        ax.fill(x, y, alpha=0.3, color="gray")
+
+    # Plot buffered obstacles
+    for poly in buffered_obstacles:
+        x, y = zip(*poly)
+        ax.fill(x, y, alpha=0.5, color="purple")
+
+    # Plot all goals in green
+    goal_x, goal_y = zip(*goals)
+    ax.scatter(goal_x, goal_y, color="green", s=100, label="Goals")
+
+    # Plot robot 1 (blue) and robot 2 (red)
+    ax.scatter(
+        robots[0][0], robots[0][1], color="blue", s=150, label="Robot 1", marker="s"
+    )
+    ax.scatter(
+        robots[1][0], robots[1][1], color="red", s=150, label="Robot 2", marker="s"
+    )
+
+    # Add paths for robot 1
+    robot_blue_paths = []
+    robot_blue = robots[0]
+    robot_path, robot_blue = add_path_to_graph(ax, g, robot_blue, goals[0], "blue")
+    robot_blue_paths.extend(robot_path)
+
+    robot_path, robot_blue = add_path_to_graph(ax, g, robot_blue, goals[1], "blue")
+    robot_blue_paths.extend(robot_path)
+
+    robot_path, _ = add_path_to_graph(ax, g, robot_blue, goals[5], "blue")
+    robot_blue_paths.extend(robot_path)
+
+    robot_red_paths = []
+    robot_red = robots[1]
+    robot_path, robot_red = add_path_to_graph(ax, g, robot_red, goals[2], "red")
+    robot_red_paths.extend(robot_path)
+
+    robot_path, robot_red = add_path_to_graph(ax, g, robot_red, goals[3], "red")
+    robot_red_paths.extend(robot_path)
+
+    robot_path, _ = add_path_to_graph(ax, g, robot_red, goals[4], "red")
+    robot_red_paths.extend(robot_path)
+
+    write_path(robot_blue_paths, "blue_robot.txt")
+
+    write_path(robot_red_paths, "red_robot.txt")
+
+    ax.set_aspect("equal", "box")
+    ax.legend()
+    ax.set_title("Multi-Robot Path Planning with Obstacles")
+    plt.show()
