@@ -100,7 +100,7 @@ def add_path_to_graph(
 def write_path(path: list, filename: str):
     with open(f"output-{filename}", "w") as f:
         for p in path:
-            f.write(f"{p[0]} {p[1]}\n")
+            f.write(f"{p[0]},{p[1]},0\n")
 
 
 def robot_search():
@@ -126,9 +126,10 @@ def robot_search():
     _, ax = plt.subplots()
 
     # Plot original obstacles
-    for poly in obstacles_polys:
+    obs_colors = ["red", "blue", "gray", "yellow"]
+    for i, poly in enumerate(obstacles_polys):
         x, y = zip(*poly)
-        ax.fill(x, y, alpha=0.3, color="gray")
+        ax.fill(x, y, alpha=0.3, color=obs_colors[i])
 
     # Plot buffered obstacles
     for poly in buffered_obstacles:
@@ -147,32 +148,27 @@ def robot_search():
         robots[1][0], robots[1][1], color="red", s=150, label="Robot 2", marker="s"
     )
 
+    robot_order_blue = [0, 1, 5, 2, 3, 4]
+    robot_order_red = [2, 3, 4, 0, 1, 5]
+
     # Add paths for robot 1
     robot_blue_paths = []
     robot_blue = robots[0]
-    robot_path, robot_blue = add_path_to_graph(ax, g, robot_blue, goals[0], "blue")
-    robot_blue_paths.extend(robot_path)
-
-    robot_path, robot_blue = add_path_to_graph(ax, g, robot_blue, goals[1], "blue")
-    robot_blue_paths.extend(robot_path)
-
-    robot_path, _ = add_path_to_graph(ax, g, robot_blue, goals[5], "blue")
-    robot_blue_paths.extend(robot_path)
+    for goal in robot_order_blue:
+        robot_path, robot_blue = add_path_to_graph(
+            ax, g, robot_blue, goals[goal], "blue"
+        )
+        robot_blue_paths.extend(robot_path)
 
     robot_red_paths = []
     robot_red = robots[1]
-    robot_path, robot_red = add_path_to_graph(ax, g, robot_red, goals[2], "red")
-    robot_red_paths.extend(robot_path)
+    for goal in robot_order_red:
+        robot_path, robot_red = add_path_to_graph(ax, g, robot_red, goals[goal], "red")
+        robot_red_paths.extend(robot_path)
 
-    robot_path, robot_red = add_path_to_graph(ax, g, robot_red, goals[3], "red")
-    robot_red_paths.extend(robot_path)
+    write_path(robot_blue_paths, "XY_103_4_1.txt")
 
-    robot_path, _ = add_path_to_graph(ax, g, robot_red, goals[4], "red")
-    robot_red_paths.extend(robot_path)
-
-    write_path(robot_blue_paths, "blue_robot.txt")
-
-    write_path(robot_red_paths, "red_robot.txt")
+    write_path(robot_red_paths, "XY_103_4_2.txt")
 
     ax.set_aspect("equal", "box")
     ax.legend()
