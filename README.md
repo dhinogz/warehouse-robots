@@ -40,3 +40,10 @@ With the virtual environment started, run the CLI tool
 ```bash
 python main.py
 ```
+
+## Run lab robot simulation
+```bash
+python main.py search
+```
+A graph with the paths will be generated with two output files
+

@@ -64,7 +64,7 @@ def add_buffer_to_polygon(
 
 def add_buffer_to_list_of_polygons(
     obstacle_corners: list[ObstacleCorners],
-    buffer: float = 0.11,
+    buffer: float = 0.17,
 ) -> list:
     obstacles_polys = []
     buffered_obstacles = []
@@ -98,7 +98,7 @@ def add_path_to_graph(
 
 
 def write_path(path: list, filename: str):
-    with open(f"output-{filename}", "w") as f:
+    with open(f"{filename}", "w") as f:
         for p in path:
             f.write(f"{p[0]},{p[1]},0\n")
 
@@ -148,8 +148,11 @@ def robot_search():
         robots[1][0], robots[1][1], color="red", s=150, label="Robot 2", marker="s"
     )
 
-    robot_order_blue = [0, 1, 5, 2, 3, 4]
-    robot_order_red = [2, 3, 4, 0, 1, 5]
+    # 0 -> 1 -> 5 -> 2 -> 3 -> 4
+
+    # 0 -> 6 -> 2 -> 1 -> 2 -> 7 -> 3 -> 8 -> 4
+    robot_order_blue = [0, 6, 2, 1, 7, 4, 8, 3]
+    robot_order_red = [7, 4, 8, 3, 8, 9, 10, 0, 6, 2, 1]
 
     # Add paths for robot 1
     robot_blue_paths = []
@@ -171,6 +174,6 @@ def robot_search():
     write_path(robot_red_paths, "XY_103_4_2.txt")
 
     ax.set_aspect("equal", "box")
-    ax.legend()
+    # ax.legend()
     ax.set_title("Multi-Robot Path Planning with Obstacles")
     plt.show()
