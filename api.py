@@ -46,6 +46,7 @@ def dummy() -> dict:
         "agents": [
             {"id": 1, "type": "robot", "positions": ["10,16", "10,15"]},
             {"id": 2, "type": "robot", "positions": ["11,16", "11,15"]},
+            {"id": 2, "type": "robot", "positions": ["12,16", "12,15"]},
             {"id": 3, "type": "package", "positions": ["5,6", "5,6"]},
         ],
     }
