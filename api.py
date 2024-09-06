@@ -44,9 +44,9 @@ def dummy() -> dict:
         "obstacles": "1,3 4,2",
         "loadingStations": "1,1 3,1",
         "agents": [
-            {"id": 1, "type": "robot", "positions": ["1,2", "2,2"]},
-            {"id": 2, "type": "robot", "positions": ["1,4", "2,4"]},
-            {"id": 3, "type": "package", "positions": ["1,6", "1,6"]},
+            {"id": 1, "type": "robot", "positions": ["10,16", "10,15"]},
+            {"id": 2, "type": "robot", "positions": ["11,16", "11,15"]},
+            {"id": 3, "type": "package", "positions": ["5,6", "5,6"]},
         ],
     }
     return data
